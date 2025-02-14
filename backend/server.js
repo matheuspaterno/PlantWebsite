@@ -38,6 +38,12 @@ app.get("/contacts", async (req, res) => {
 // '12 stone rd', 'bedrock', 'MA', '01234');
 app.post('/customer', async (req, res) => {
     try {
+        /*
+        if ((req.body.productName + "").length < 2) {
+            res.send({ status: -1, message: "Product Length too short" });
+            return;
+        }
+            */
         const values = [
             req.body.customerId,
             req.body.lastName,
@@ -94,11 +100,39 @@ app.post('/auth', async (req, res) => {
 
 /*
 call plants.usp_product_save(1, 1, 'Tulips', 'The Best Boston Tulips', 50,100 , 'tulips1.jpeg,tulips2.jpeg');
+{
+    "productId":0,
+    "catId":1,
+    "productName":"Snake Plant",
+    "description"Very hardy, tolerates low light and neglect.",
+    "price":10,
+    "qoh":100,
+    "images":"File name on server"
+}
 */
 app.post('/product', async (req, res) => {
     try {
         const values = [
             req.body.productId,
+            req.body.catId,
+            req.body.productName,
+            req.body.description,
+            req.body.price,
+            req.body.qoh,
+            req.body.images
+        ]
+        console.log("post product", req.body);
+        const rows = await dao.call("usp_product_save", values);
+        console.log("sp response", rows);
+        res.send(rows); // sends response from db stored procedure to client
+    } catch (ex) {
+        res.send({ status: 404, message: "Error getting contacts", ex: ex });
+    }
+})
+app.put('/product/:id', async (req, res) => {
+    try {
+        const values = [
+            req.params.id,
             req.body.catId,
             req.body.productName,
             req.body.description,
