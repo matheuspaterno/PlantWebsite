@@ -14,7 +14,6 @@ app.use(express.static('public'));
 
 const GC_PUBLIC_DIR = path.join(__dirname + '/public/index.html').split("index.html")[0];
 
-//console.log ("GC_PUBLIC_DIR",GC_PUBLIC_DIR);
 const dao = new MainDAO();
 let ssn;
 const GC_RELEASE = "2025-01-21";
