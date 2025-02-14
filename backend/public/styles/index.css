@@ -1,0 +1,13 @@
+
+.formInput {
+    font-family: "Times New Roman", Times, serif;
+    color: darkslateblue;
+    font-size: medium;
+    background-color: whitesmoke;
+    background: solid;
+    position: relative;
+    width: 100%;
+    height: 600px;
+    margin: 10px;
+    padding: 10px;
+}

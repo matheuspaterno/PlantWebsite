@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Contact Us</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='styles/index.css'>
+    <script src='scripts/index.js'></script>
+</head>
+<body>
+    <h1>Contact US</h1>
+    <div class="formInput" id="divContactUsForm">
+        <form method="post" action="" onClick="return false;">
+          <p>
+            Name:<br />
+            <input type="text" name="fullName" id="fullName" size="50" />
+          </p>
+          <p>
+            Email:<br />
+            <input type="email" name="email" id="email" size="50" />
+          </p>
+          <div>
+            Message:<br />
+            <textarea name="message" id="message" rows="5" cols="60"></textarea>
+          </div>
+        </form>
+        <div>
+          <label for="joinMailList">
+            <input
+              type="checkbox"
+              name="joinMailList"
+              id="joinMailList"
+              value="X"
+              onclick="joinMailList_Click(this)"
+            />
+            Join our mailing list?
+          </label>
+        </div>
+        <div id="divAdminEmail"></div>
+      
+        <br />
+        <button onClick="postContact()">Send</button>
+        <button onclick="document.location.replace('/')">Cancel</button>
+      
+        <hr />
+       
+      </div>
+      <script>
+        const fullName = document.getElementById('fullName')
+        const email = document.getElementById('email')
+        const message = document.getElementById('message')
+        const joinMailList = document.getElementById('joinMailList')
+        function joinMailList_Click(event) {
+          console.log('joinMailList_Click', joinMailList.checked)
+        }
+        let contacts;
+        async function getContacts()
+        {
+            const resp = await fetch("/contacts");
+            contacts= await resp.json();
+            console.log ("contacts:", contacts)
+        }
+        async function postContact() {
+          console.log('joinMailList', joinMailList.checked)
+      
+          const body = {
+            id: 0,
+            fullName: fullName.value,
+            email: email.value,
+            message: message.value,
+            joinMailList: joinMailList.checked
+          }
+          console.log('postContact.body:', body)
+      
+          const resp = await fetch ('/contactus',
+          {
+            method:"POST",
+            headers:{
+                "Content-Type": "application/json",
+            },
+            body:JSON.stringify(body)
+          } );
+          const json = await resp.json();
+          console.log('postToServer.resp:', json)
+          alert(json.message)
+      
+          window.location.replace('/')
+        }
+       
+      
+        getContacts();
+      </script>
+      
+</body>
+</html>

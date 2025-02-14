@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Amortization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      td,
+      th {
+        min-width: 100px;
+      }
+      td {
+        text-align: right;
+      }
+      table {
+        min-width: auto;
+      }
+    </style>
+  </head>
+  <body onload="pageLoad()">
+    <h2>Amortization Schedule</h2>
+    <div id="divForm">
+      <p>
+        Principal:
+        <input
+          type="number"
+          id="principal"
+          placeholder="principal"
+          value="500000"
+        />
+      </p>
+      <p>
+        Interest Rate:
+        <input
+          type="number"
+          id="interest"
+          placeholder="interest"
+          value="5"
+          min="0"
+          max="100"
+        />
+      </p>
+      <p>
+        Term:
+        <input
+          type="number"
+          id="months"
+          placeholder="months"
+          value="360"
+          min="0"
+          max="600"
+        />
+      </p>
+
+      <p>
+        First Payment:
+        <input
+          type="text"
+          id="startDate"
+          placeholder="start date"
+          value="2023-06-01"
+        />
+      </p>
+      <p>
+        Saved Values:
+        <select id="saveValues" onChange="changeValue(this)"></select>
+      </p>
+      <div id="divButtons">
+        <button onClick="calc_Click()">Calc</button>
+        <button onClick="showTable()">Table</button>
+        <button onClick="saveLocal(-1)">Save</button>
+        <button onClick="saveLocal(0)">Local Add</button>
+        <button onClick="printPDF('divContent',800,600)">Print</button>
+      </div>
+    </div>
+    <div id="divContent">
+      <div id="divOutput"></div>
+      <div id="divAmortTable">
+        <table border="1">
+          <tr>
+            <th>Date</th>
+            <th>Principal</th>
+            <th>Interest</th>
+            <th>Balance</th>
+          </tr>
+          <tbody id="tbodyId"></tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+  <script>
+    const saveValues = document.getElementById('saveValues')
+    const divAmortTable = document.getElementById('divAmortTable')
+    const tbodyId = document.getElementById('tbodyId')
+    const startDate = document.getElementById('startDate')
+    const termObj = document.getElementById('months')
+    const balanceObj = document.getElementById('principal')
+    const rateObj = document.getElementById('interest')
+    let currentValueIndex
+    let currentValue = 0
+    let data = []
+
+    function pageLoad() {
+      divAmortTable.style.display = 'none'
+      const item = localStorage.getItem('AMORT_DATA')
+      if (item) {
+        data = JSON.parse(item)
+      } else {
+        const dt = new Date()
+        dt.setMonth(dt.getMonth() + 1)
+        dt.setDate(1)
+        const s = {
+          principal: 500000,
+          term: 360,
+          rate: 5.0,
+          startDate: format(dt)
+        }
+        data.push(s)
+      }
+      setValues(0)
+      console.log('DATA:', data)
+      addOptions(saveValues, data, 0)
+    }
+
+    function setValues(idx) {
+      console.log('setValues:', data[idx])
+      currentValueIndex = idx
+      currentValues = data[idx]
+      balanceObj.value = currentValues.principal
+      termObj.value = currentValues.term
+      rateObj.value = currentValues.rate
+      startDate.value = currentValues.startDate
+    }
+    function changeValue(lst) {
+      setValues(lst.value)
+    }
+    function calc_Click() {
+      divAmortTable.style.display = 'none'
+      const p = document.getElementById('principal').value
+      const i = document.getElementById('interest').value
+      const m = document.getElementById('months').value
+      const loan = calculate(p, i, m)
+      console.log('LOAN:', loan)
+      document.getElementById('divOutput').innerHTML =
+        '<p><b>Payment: ' + dollars(loan.payment) + '</b></p>'
+    }
+    function calculate(principal, intRate, payments) {
+      const interest = intRate / 100 / 12
+      // var payments = years * 12;
+      console.log(principal, interest, payments)
+      const x = Math.pow(1 + interest, payments)
+      const monthly = (principal * x * interest) / (x - 1)
+
+      if (
+        !isNaN(monthly) &&
+        monthly != Number.POSITIVE_INFINITY &&
+        monthly != Number.NEGATIVE_INFINITY
+      ) {
+        const obj = {
+          payment: round(monthly),
+          total: round(monthly * payments),
+          totalInterest: round(monthly * payments - principal)
+        }
+        return obj
+      } else {
+        console.log('monthly invalid', monthly)
+      }
+    }
+    function round(x) {
+      return Math.round(x * 100) / 100
+    }
+    async function saveLocal(idx) {
+      const name = prompt('Name:')
+
+      const item = {
+        text: name,
+        principal: document.getElementById('principal').value,
+        term: document.getElementById('months').value,
+        rate: document.getElementById('interest').value,
+        startDate: document.getElementById('startDate').value
+      }
+      if (idx === 0) {
+        data.push(item)
+      } else {
+        data[currentValueIndex] = item
+      }
+      console.log('SAVE:', data)
+      localStorage.setItem('AMORT_DATA', JSON.stringify(data))
+      const resp = await fetch('/amort', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      const json = await resp.json()
+      console.log('saveLocal.server resp:', json)
+    }
+    function showTable() {
+      const term = termObj.value
+      let balance = balanceObj.value
+      const rate = rateObj.value
+      const loan = calculate(balance, rate, term)
+      console.log('loan', loan)
+
+      const startDate = new Date(document.getElementById('startDate').value)
+      console.log('startDate', startDate)
+      const payment = loan.payment
+      let totalInterest = 0
+      let totalPayments = 0
+      let t = ''
+      let priorYear = startDate.getFullYear()
+      console.log('priorYear', priorYear)
+      let intYTD = 0
+      let principalYTD = 0
+      for (let i = 0; i < term; i++) {
+        // console.log("startDate:", startDate);
+        const int = balance * (rate / 12 / 100)
+        totalInterest += int
+        const principal = payment - int
+
+        balance = balance - principal
+        const p = dollars(principal)
+
+        const tr = ` <tr><td>${format(startDate)}</td></td><td>
+            ${p}</td><td>${dollars(int)}</td><td>${dollars(balance)}</td></tr>`
+        t += tr
+        startDate.setMonth(startDate.getMonth() + 1)
+        intYTD += int
+        principalYTD += principal
+
+        if (priorYear !== startDate.getFullYear()) {
+          const $paymentsYTD = dollars(principalYTD + intYTD)
+          const $principalYTD = dollars(principalYTD)
+          const $intYTD = dollars(intYTD)
+
+          const tr = `<tr><th><b>${priorYear} SUM:</b></th></th><th>
+                ${$principalYTD}</th><th>${$intYTD}</th><th>${$paymentsYTD}</th></tr>`
+
+          t += tr
+          priorYear = startDate.getFullYear()
+          intYTD = 0
+          principalYTD = 0
+        }
+      }
+      document.getElementById('divOutput').innerHTML =
+        '<p><b>Payment: ' +
+        dollars(loan.payment) +
+        '<br/>Total Interest: ' +
+        dollars(totalInterest) +
+        '</b></p><hr/>'
+      tbodyId.innerHTML = t
+      divAmortTable.style.display = 'block'
+    }
+    function format(date) {
+      if (!(date instanceof Date)) {
+        throw new Error(
+          'Invalid "date" argument. You must pass a date instance'
+        )
+      }
+
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+
+      return `${year}-${month}-${day}`
+    }
+    function dollars(amt) {
+      let USDollar = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD'
+      })
+      return USDollar.format(amt)
+    }
+    function addOptions(selectList, sourceList, currentValue = null) {
+      console.log('addOptions:', sourceList)
+      for (idx in sourceList) {
+        const row = sourceList[idx]
+        console.log('addOption:', row)
+
+        const opt = document.createElement('option')
+        opt.value = idx
+        opt.selected == (idx === currentValue)
+        opt.innerHTML = row.text
+        selectList.appendChild(opt)
+      }
+    }
+    function printPDF(elementId, height, width) {
+      document.getElementById('divButtons').style.display = 'none'
+
+      let makepdf = document.getElementById(elementId)
+
+      let mywindow = window.open('', 'PRINT', `height=${height},width=${width}`)
+
+      mywindow.document.write(makepdf.innerHTML)
+
+      mywindow.document.close()
+      mywindow.focus()
+
+      mywindow.print()
+      mywindow.close()
+      document.getElementById('divButtons').style.display = 'block'
+
+      return true
+    }
+  </script>
+</html>
