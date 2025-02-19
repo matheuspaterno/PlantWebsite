@@ -1,23 +1,9 @@
 const { Sequelize, DataTypes } = require('sequelize');
 //const { iniParams } = require('request-promise');
-/*
-CREATE USER 'devuser'@'%' IDENTIFIED BY 'Dev12345';
-GRANT ALL PRIVILEGES ON *.* TO 'devuser'@'%' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
-*/
+
 let sequelize;
 let conn;
-/*
-const connLocal = {
-    database: "plants",
-    user: "devuser",
-    password: "Dev2025",
-    host: "127.0.0.1",
-    port: 3306,
-    dialect: "mysql"
-}
-conn = connLocal;
-*/
+
 let connection;
 
 //module.exports =
