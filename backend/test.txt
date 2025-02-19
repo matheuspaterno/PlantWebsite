@@ -1,0 +1,14 @@
+{
+    "email":"fredflintstone@gmail.com",
+    "password":"Test1234"
+
+   
+}
+
+{
+    "productId":1,
+    "quantity":1,
+    "amount":10
+
+   
+}

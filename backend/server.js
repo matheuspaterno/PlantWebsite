@@ -3,6 +3,7 @@ require("dotenv").config();
 const PORT = process.env.PORT || 4000;
 const bodyParser = require('body-parser');
 const express = require("express");
+const session = require("express-session");
 const app = express();
 const path = require("path");
 const cors = require("cors");
@@ -11,6 +12,7 @@ app.use(express.json());
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'));
+app.use(session({ secret: "XASDASDA" }));
 
 const GC_PUBLIC_DIR = path.join(__dirname + '/public/index.html').split("index.html")[0];
 
@@ -34,6 +36,70 @@ app.get("/contacts", async (req, res) => {
         res.send({ status: 404, message: "Error getting contacts", ex: ex });
     }
 })
+app.post('/cart', async (req, res) => {
+    ssn = req.session;
+    const item = req.body;
+    const cart = (ssn['cart'] === undefined ? [] : ssn['cart']);
+    let found = false;
+    for (let i in cart) {
+        if (cart[i].productId === item.productId) {
+            cart[i].quantity = item.quantity;
+            cart[i].amount = item.amount;
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        cart.push(item);
+    }
+
+    ssn.cart = cart;
+    console.log("post to cart", cart)
+    res.send(cart);
+});
+app.get("/cart", (req, res) => {
+    ssn = req.session;
+    try {
+        if (ssn['cart'] === undefined) {
+            res.send({ status: 404, message: "empty cart" })
+        }
+        res.send(ssn['cart'])
+    } catch (ex) {
+        console.log("get cart error:", ex);
+        res.send({ status: 404, message: "get cart error:", ex: ex })
+    }
+});
+app.delete("/cart/:id", (req, res) => {
+    try {
+        ssn = req.session;
+        const cart = ssn.cart;
+        const id = req.params.id;
+        for (let i in cart) {
+            if (cart[i].productId === parseInt(id)) {
+                console.log("deleting ", cart[i])
+                cart.splice(i, 1);
+                break;
+            }
+        }
+        ssn.cart = cart;
+        res.send({ status: 200, message: `Item ${id} removed from cart` });
+    } catch (ex) {
+        res.send({ status: 404, message: "Error removing from cart", ex: ex })
+    }
+});
+app.get("/checkout", async (req, res) => {
+    try {
+        ssn = req.session;
+        const user = ssn.user;
+        const cart = ssn.cart;
+
+        console.log("checkout:", user, cart)
+        const resp = await dao.checkout(cart, user);
+        res.send(resp);
+    } catch (ex) {
+        res.send({ status: 404, message: "Error removing from cart", ex: ex })
+    }
+});
 // call plants.usp_customer_save(0, 'Flintstone', 'Fred', 'fredflintstone@gmail.com', 'rockandroll', '1111111111',
 // '12 stone rd', 'bedrock', 'MA', '01234');
 app.post('/customer', async (req, res) => {
@@ -91,13 +157,23 @@ app.post('/auth', async (req, res) => {
         const values = [req.body.email, req.body.password];
         console.log("auth", values);
         const rows = await dao.call("usp_user_auth", values);
+        const user = rows[0];
+
         console.log("sp response", rows);
-        res.send(rows);
+        if (user.status === 1) {
+            ssn = req.session;
+            ssn['user'] = user;
+        }
+        res.send(user);
     } catch (ex) {
         res.send({ status: 404, message: "Error authenticating user", ex: ex });
     }
 });
-
+app.get("/user", async (req, res) => {
+    const user = ssn.user;
+    console.log("get user in session:", user);
+    res.send(user);
+});
 /*
 call plants.usp_product_save(1, 1, 'Tulips', 'The Best Boston Tulips', 50,100 , 'tulips1.jpeg,tulips2.jpeg');
 {

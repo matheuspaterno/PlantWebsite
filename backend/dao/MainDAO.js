@@ -84,7 +84,32 @@ class MainDAO {
 
         return resp;
     }
+    checkout = async (cart, user) => {
+        try {
+            let total = 0;
+            console.log("dao.checkout:", user, cart)
 
+            let values = [user.customer_id]
+            let sp = "usp_order_save(?, null, 0, 0, null);";
+            let resp = await this.call(sp, values);
+            console.log(sp, "resp:", resp);
+            if (resp[0].status !== 1) {
+                return resp;
+            }
+            const orderId = resp[0].orderId;
+            //call plants.usp_order_detail_save(0, 1, 3, 2, 100);
+            sp = "usp_order_detail_save(0,?,?,?,?);";
+            for (let item of cart) {
+                total += item.amount;
+                values = [orderId, item.productId, item.quantity, item.amount];
+                resp = await this.call(sp, values);
+                console.log("add detail resp:", resp)
+            }
+        } catch (ex) {
+            console.log("checkout error", ex)
+            return ex;
+        }
+    }
     saveContact = async (contact) => {
         try {
             console.log("(MyDAO.postContact.contact:", contact)
