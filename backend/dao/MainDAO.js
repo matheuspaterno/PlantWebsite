@@ -7,6 +7,7 @@ FLUSH PRIVILEGES;
 */
 let sequelize;
 let conn;
+/*
 const connLocal = {
     database: "plants",
     user: "devuser",
@@ -16,6 +17,7 @@ const connLocal = {
     dialect: "mysql"
 }
 conn = connLocal;
+*/
 let connection;
 
 //module.exports =

@@ -1,5 +1,5 @@
 const fs = require("fs");
-
+require("dotenv").config();
 const PORT = process.env.PORT || 4000;
 const bodyParser = require('body-parser');
 const express = require("express");
@@ -14,7 +14,7 @@ app.use(express.static('public'));
 
 const GC_PUBLIC_DIR = path.join(__dirname + '/public/index.html').split("index.html")[0];
 
-const dao = new MainDAO();
+const dao = new MainDAO(JSON.parse(process.env.DB_CONN));
 let ssn;
 const GC_RELEASE = "2025-01-21";
 app.get("/", (req, res) => {
