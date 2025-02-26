@@ -4,30 +4,36 @@ const PORT = process.env.PORT || 4000;
 const bodyParser = require('body-parser');
 const express = require("express");
 const session = require("express-session");
-const app = express();
+const app = express();  // node module to handle requests (get, post, put, delete) with client.
 const path = require("path");
 const cors = require("cors");
 const MainDAO = require("./dao/MainDAO");
 app.use(express.json());
 app.use(cors());
+
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'));
-app.use(session({ secret: "XASDASDA" }));
-
 const GC_PUBLIC_DIR = path.join(__dirname + '/public/index.html').split("index.html")[0];
+
+app.use(session({ secret: "XASDASDA" }));
 
 const dao = new MainDAO(JSON.parse(process.env.DB_CONN));
 let ssn;
-const GC_RELEASE = "2025-01-21";
+const GC_RELEASE = "2025-02-25";
+// don't need
 app.get("/", (req, res) => {
     res.sendFile(GC_PUBLIC_DIR + "index.html");
 });
+
 app.get("/release", (req, res) => {
     res.send({ release: GC_RELEASE, dateTime: new Date() });
 });
+// don't need
 app.get("/contactus", (req, res) => {
     res.sendFile(GC_PUBLIC_DIR + "contactus.html");
 });
+// don't need
 app.get("/contacts", async (req, res) => {
     try {
         const rows = await dao.query("SELECT * FROM contacts")
@@ -36,6 +42,8 @@ app.get("/contacts", async (req, res) => {
         res.send({ status: 404, message: "Error getting contacts", ex: ex });
     }
 })
+
+// test in thunder client
 app.post('/cart', async (req, res) => {
     ssn = req.session;
     const item = req.body;
@@ -57,6 +65,8 @@ app.post('/cart', async (req, res) => {
     console.log("post to cart", cart)
     res.send(cart);
 });
+
+// test in thunder client
 app.get("/cart", (req, res) => {
     ssn = req.session;
     try {
@@ -69,6 +79,7 @@ app.get("/cart", (req, res) => {
         res.send({ status: 404, message: "get cart error:", ex: ex })
     }
 });
+// test in thunder client
 app.delete("/cart/:id", (req, res) => {
     try {
         ssn = req.session;
@@ -87,6 +98,7 @@ app.delete("/cart/:id", (req, res) => {
         res.send({ status: 404, message: "Error removing from cart", ex: ex })
     }
 });
+// test in thunder client
 app.get("/checkout", async (req, res) => {
     try {
         ssn = req.session;
@@ -102,6 +114,7 @@ app.get("/checkout", async (req, res) => {
 });
 // call plants.usp_customer_save(0, 'Flintstone', 'Fred', 'fredflintstone@gmail.com', 'rockandroll', '1111111111',
 // '12 stone rd', 'bedrock', 'MA', '01234');
+// test in thunder client
 app.post('/customer', async (req, res) => {
     try {
         /*
@@ -130,6 +143,7 @@ app.post('/customer', async (req, res) => {
         res.send({ status: 404, message: "Error getting contacts", ex: ex });
     }
 })
+// test in thunder client
 app.put('/customer/:customerId', async (req, res) => {
     try {
         const values = [
@@ -152,6 +166,7 @@ app.put('/customer/:customerId', async (req, res) => {
         res.send({ status: 404, message: "Error getting contacts", ex: ex });
     }
 })
+// test in thunder client
 app.post('/auth', async (req, res) => {
     try {
         const values = [req.body.email, req.body.password];
@@ -169,6 +184,7 @@ app.post('/auth', async (req, res) => {
         res.send({ status: 404, message: "Error authenticating user", ex: ex });
     }
 });
+// test in thunder client
 app.get("/user", async (req, res) => {
     const user = ssn.user;
     console.log("get user in session:", user);
@@ -186,6 +202,7 @@ call plants.usp_product_save(1, 1, 'Tulips', 'The Best Boston Tulips', 50,100 , 
     "images":"File name on server"
 }
 */
+// test in thunder client
 app.post('/product', async (req, res) => {
     try {
         const values = [
@@ -205,6 +222,7 @@ app.post('/product', async (req, res) => {
         res.send({ status: 404, message: "Error getting contacts", ex: ex });
     }
 })
+// test in thunder client
 app.put('/product/:id', async (req, res) => {
     try {
         const values = [
@@ -224,6 +242,7 @@ app.put('/product/:id', async (req, res) => {
         res.send({ status: 404, message: "Error getting contacts", ex: ex });
     }
 })
+// test in thunder client
 app.get("/products", async (req, res) => {
     try {
         const rows = await dao.query("SELECT * FROM products")
@@ -232,7 +251,7 @@ app.get("/products", async (req, res) => {
         res.send({ status: 404, message: "Error getting contacts", ex: ex });
     }
 })
-
+// test in thunder client
 app.get("/products/cat/:id", async (req, res) => {
     try {
         const id = req.params.id;
@@ -242,6 +261,7 @@ app.get("/products/cat/:id", async (req, res) => {
         res.send({ status: 404, message: "Error getting contacts", ex: ex });
     }
 })
+// test in thunder client
 app.get("/contact/:id", async (req, res) => {
     try {
         const id = req.params.id;
@@ -251,12 +271,15 @@ app.get("/contact/:id", async (req, res) => {
         res.send({ status: 404, message: "Error getting contacts", ex: ex });
     }
 })
+
+// don't need
 app.post("/contactus", async (req, res) => {
     const body = req.body;
     const resp = await dao.saveContact(body);
     console.log("post contact us:", resp)
     res.send(resp);
 });
+// don't need
 app.post("/login", async (req, res) => {
     const body = req.body;
     const resp = await dao.saveContact(body);
