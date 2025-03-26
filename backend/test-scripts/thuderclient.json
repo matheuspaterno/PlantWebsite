@@ -1,8 +1,60 @@
-// POST: http://localhost:4000/cart
+// POST: http://localhost:4000/customer  Add customer
+{
+    "customerId": 0,
+    "lastName": "Pan",
+    "firstName": "Peter",
+    "email": "peter.pan@test.com",
+    "password": "Test1234",
+    "phoneNumber": "333-555-1212",
+    "street": "132 Test lane",
+    "city": "Boston",
+    "state": "MA",
+    "zipCode": "12345"
+}
+// PUT: http://localhost:4000/customer/3 update customer
+{
+    "customerId": 3,
+    "lastName": "Pan",
+    "firstName": "Peter",
+    "email": "peter.pan@test.com",
+    "password": "Test1234",
+    "phoneNumber": "333-555-1212",
+    "street": "132 Test lane",
+    "city": "Boston",
+    "state": "MA",
+    "zipCode": "12345"
+}
+// POST: http://localhost:4000/auth  authenticate
+{
+    "email": "fredflintstone@gmail.com",
+    "password": "Test1234"
+}
+// POST: http://localhost:4000/product  Add product
+{
+    "productId": 0,
+    "catId": 1,
+    "productName": "Boston Tea",
+    "description": "The best Tea for a party.",
+    "price": 10,
+    "qoh": 100,
+    "images": "File name on server"
+}
+//PUT:localhost:4000/product/6  Update product
+{
+    "productId": 6,
+    "catId": 1,
+    "productName": "Boston Tea",
+    "description": "The best Tea for a tea party.",
+    "price": 12,
+    "qoh": 90,
+    "images": "File name on server"
+}
+// POST: http://localhost:4000/cart  Add to cart
 {
     "productId": 1,
     "quantity": 2,
     "amount": 10.00
 }
-// GET: http://localhost:4000/cart
-// DELETE: http://localhost:4000/cart/1
+// GET: http://localhost:4000/cart  get cart
+// DELETE: http://localhost:4000/cart/1  delete item from cart
+// GET: http://localhost:4000/checkout  checkout process

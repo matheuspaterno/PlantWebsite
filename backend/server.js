@@ -10,7 +10,7 @@ const cors = require("cors");
 const MainDAO = require("./dao/MainDAO");
 app.use(express.json());
 app.use(cors());
-
+const Charge = require("./stripe");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'));
@@ -72,8 +72,9 @@ app.get("/cart", (req, res) => {
     try {
         if (ssn['cart'] === undefined) {
             res.send({ status: 404, message: "empty cart" })
+        } else {
+            res.send(ssn['cart'])
         }
-        res.send(ssn['cart'])
     } catch (ex) {
         console.log("get cart error:", ex);
         res.send({ status: 404, message: "get cart error:", ex: ex })
@@ -107,10 +108,47 @@ app.get("/checkout", async (req, res) => {
 
         console.log("checkout:", user, cart)
         const resp = await dao.checkout(cart, user);
+        console.log("resp from chekcout:", resp);
+        if (resp[0].status === 1) {
+            console.log("remove cart", resp[0]);
+            const charge = new Charge();
+            const str = await charge.charge(resp[0])
+            console.log("resp from stripe:", str)
+            ssn.cart = [];
+            // res.redirect(str.url);
+            // return;
+            resp[0]['stripe'] = str;
+        }
         res.send(resp);
     } catch (ex) {
-        res.send({ status: 404, message: "Error removing from cart", ex: ex })
+        res.send({ status: 404, message: "Error checking out from cart", ex: ex })
     }
+});
+app.get("/api/payment/success/:token", async (req, res) => {
+    try {
+        console.log("payment:", req.params.token);
+        const id = (req.params.token + "").split("-")[0];
+        console.log("id:", id);
+        const resp = await dao.payment(id, 1);
+        res.send(resp);
+    } catch (ex) {
+        console.log("payment api error:", ex)
+        res.send({ status: 404, message: "Error setting payment", ex: ex })
+    }
+
+});
+app.get("/api/payment/cancel/:token", async (req, res) => {
+    try {
+        console.log("payment:", req.params.token);
+        const id = (req.params.token + "").split("-")[0];
+        console.log("id:", id);
+        const resp = await dao.payment(id, -1);
+        res.send(resp);
+    } catch (ex) {
+        console.log("payment api error:", ex)
+        res.send({ status: 404, message: "Error setting payment", ex: ex })
+    }
+
 });
 // call plants.usp_customer_save(0, 'Flintstone', 'Fred', 'fredflintstone@gmail.com', 'rockandroll', '1111111111',
 // '12 stone rd', 'bedrock', 'MA', '01234');
@@ -122,6 +160,18 @@ app.post('/customer', async (req, res) => {
             res.send({ status: -1, message: "Product Length too short" });
             return;
         }
+            {
+                "customerId":0,
+                "lastName":"Pan",
+                "firstName":"Peter",
+                "email":"peter.pan@test.com",
+                "password":"Test1234",
+                "phoneNumber":"333-555-1212",
+                "street":"132 Test lane",
+                "city":"Boston",
+                "state":"MA",
+                "zipCode":"12345"
+           }
             */
         const values = [
             req.body.customerId,
@@ -271,7 +321,15 @@ app.get("/contact/:id", async (req, res) => {
         res.send({ status: 404, message: "Error getting contacts", ex: ex });
     }
 })
-
+app.get("/payments/:token/:status", async (req, res) => {
+    try {
+        const id = req.params.id;
+        const rows = await dao.query("SELECT * FROM products WHERE cat_id=?", [id])
+        res.send(rows);
+    } catch (ex) {
+        res.send({ status: 404, message: "Error getting contacts", ex: ex });
+    }
+})
 // don't need
 app.post("/contactus", async (req, res) => {
     const body = req.body;

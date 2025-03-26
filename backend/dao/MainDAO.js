@@ -87,7 +87,7 @@ class MainDAO {
     checkout = async (cart, user) => {
         try {
             let total = 0;
-            console.log("dao.checkout:", user, cart)
+            console.log("dao.checkout:", user, cart, new Date());
 
             let values = [user.customer_id]
             let sp = "usp_order_save(?, null, 0, 0, null);";
@@ -98,6 +98,7 @@ class MainDAO {
             }
             const orderId = resp[0].orderId;
             //call plants.usp_order_detail_save(0, 1, 3, 2, 100);
+            console.log("checkout order id:", orderId);
             sp = "usp_order_detail_save(0,?,?,?,?);";
             for (let item of cart) {
                 total += item.amount;
@@ -105,9 +106,25 @@ class MainDAO {
                 resp = await this.call(sp, values);
                 console.log("add detail resp:", resp)
             }
+            resp[0]['orderId'] = orderId;
+            resp[0]['amount'] = total;
+            return resp;
         } catch (ex) {
             console.log("checkout error", ex)
             return ex;
+        }
+    }
+    payment = async (id, status) => { // This is a good example of what to do.
+        try {
+            console.log("resp usp_payment:", id, status);
+
+            const resp = await this.call("usp_payment", [id, status]);
+            console.log("resp usp_payment: resp:", resp);
+
+            return resp;
+        } catch (ex) {
+            console.log(ex);
+            return { status: -1, message: "Payment update failed" }
         }
     }
     saveContact = async (contact) => {
