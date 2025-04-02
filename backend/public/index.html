@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
@@ -7,8 +8,29 @@
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link rel='stylesheet' type='text/css' media='screen' href='styles/index.css'>
     <script src='scripts/index.js'></script>
+
 </head>
+
 <body>
     <h1>Welcome to my first web page</h1>
+    <div id="divProducts">
+
+    </div>
 </body>
+<script>
+    let products;
+    const getProducts = async () => {
+        const resp = await fetch("http://44.198.80.99:4000/products");
+        products = await resp.json();
+        console.log(products);
+        let list = "<ol>";
+        for (let prod of products) {
+            let li = `<li>${prod.product_name} - ${prod.description}</li>`;
+            list += li;
+        }
+        document.getElementById("divProducts").innerHTML = list + "<ol/>"
+    }
+    getProducts();
+</script>
+
 </html>

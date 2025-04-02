@@ -33,8 +33,8 @@
 {
     "productId": 0,
     "catId": 1,
-    "productName": "Boston Tea",
-    "description": "The best Tea for a party.",
+    "productName": "Snake Plant",
+    "description": "Very hardy, tolerates low light and neglect.",
     "price": 10,
     "qoh": 100,
     "images": "File name on server"
