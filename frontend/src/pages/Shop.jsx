@@ -1,14 +1,22 @@
 import { useState, useEffect, useContext } from "react";
-import { fetchProducts } from "../api/api"; // changed
+import API from "../api/api"; // changed
 import PlantCard from "../components/PlantCard";
 import { CartContext } from "../context/CartContext";
+import mockProducts from "../data/mockProducts";
+
 
 export default function Shop() {
   const [plants, setPlants] = useState([]);
   const { addOrUpdate } = useContext(CartContext);
 
   useEffect(() => {
-    fetchProducts().then(setPlants);
+    if (import.meta.env.VITE_USE_MOCKS === "true") {
+      setPlants(mockProducts);
+    } else {
+      API.get("/products")
+        .then((r) => setPlants(r.data))
+        .catch(() => setPlants([]));
+    }
   }, []);
 
   return (

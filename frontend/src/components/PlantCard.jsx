@@ -2,15 +2,18 @@ import { useState } from "react";
 
 export default function PlantCard({ plant, onAdd }) {
   const [qty, setQty] = useState(1);
-  const img = plant.images.split(",")[0];
+  const imgSrc =
+    plant.image ||
+    `${import.meta.env.VITE_API_BASE_URL}/${plant.images.split(",")[0]}`;
 
   return (
     <div className="border rounded-lg shadow-sm hover:shadow-md transition overflow-hidden">
       <img
-        src={`${import.meta.env.VITE_API_BASE_URL}/${img}`}
+        src={imgSrc}
         alt={plant.productName}
         className="h-48 w-full object-cover"
       />
+
       <div className="p-4 flex flex-col">
         <h2 className="text-xl font-semibold text-forest">
           {plant.productName}
