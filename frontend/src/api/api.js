@@ -2,6 +2,8 @@ import axios from 'axios';
 import mockProducts from '../data/mockProducts';
 
 const BASE = import.meta.env.VITE_API_BASE_URL;
+console.log('📡 API baseURL:', BASE);
+
 
 const API = axios.create({ baseURL: BASE });
 
