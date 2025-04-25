@@ -1,9 +1,11 @@
 /* 1) Import Tailwind’s engine */
 @import "tailwindcss";
+@plugin "daisyui";
+
 
 /* 2) Your custom palette as CSS variables */
 @theme {
-  --color-light:  #dad7cd;
+  --color-light:  #ccd5b2;
   --color-sage:   #a3b18a;
   --color-olive:  #588157;
   --color-forest: #3a5a40;

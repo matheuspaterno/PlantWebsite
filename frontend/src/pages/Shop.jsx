@@ -28,6 +28,8 @@ export default function Shop() {
           onAdd={(qty) =>
             addOrUpdate({
               productId: p.productId,
+              productName: p.productName,
+              image: p.image || `${import.meta.env.VITE_API_BASE_URL}/${p.images.split(",")[0]}`,
               quantity: qty,
               amount: p.price * qty,
             })
