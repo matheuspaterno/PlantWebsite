@@ -89,7 +89,7 @@ class MainDAO {
             let total = 0;
             console.log("dao.checkout:", user, cart, new Date());
 
-            let values = [user.customer_id]
+            let values = [user.customerId]
             let sp = "usp_order_save(?, null, 0, 0, null);";
             let resp = await this.call(sp, values);
             console.log(sp, "resp:", resp);

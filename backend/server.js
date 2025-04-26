@@ -130,7 +130,7 @@ app.get("/api/payment/success/:token", async (req, res) => {
         const id = (req.params.token + "").split("-")[0];
         console.log("id:", id);
         const resp = await dao.payment(id, 1);
-        res.send(resp);
+        res.send("<h1>payment received</h1>");
     } catch (ex) {
         console.log("payment api error:", ex)
         res.send({ status: 404, message: "Error setting payment", ex: ex })
@@ -143,7 +143,7 @@ app.get("/api/payment/cancel/:token", async (req, res) => {
         const id = (req.params.token + "").split("-")[0];
         console.log("id:", id);
         const resp = await dao.payment(id, -1);
-        res.send(resp);
+        res.send("<h1>payment cancelled</h1>");
     } catch (ex) {
         console.log("payment api error:", ex)
         res.send({ status: 404, message: "Error setting payment", ex: ex })
@@ -295,7 +295,7 @@ app.put('/product/:id', async (req, res) => {
 // test in thunder client
 app.get("/products", async (req, res) => {
     try {
-        const rows = await dao.query("SELECT * FROM products")
+        const rows = await dao.query("SELECT * FROM view_products")
         res.send(rows);
     } catch (ex) {
         res.send({ status: 404, message: "Error getting contacts", ex: ex });
@@ -305,7 +305,7 @@ app.get("/products", async (req, res) => {
 app.get("/products/cat/:id", async (req, res) => {
     try {
         const id = req.params.id;
-        const rows = await dao.query("SELECT * FROM products WHERE cat_id=?", [id])
+        const rows = await dao.query("SELECT * FROM view_products WHERE cat_id=?", [id])
         res.send(rows);
     } catch (ex) {
         res.send({ status: 404, message: "Error getting contacts", ex: ex });
@@ -324,7 +324,7 @@ app.get("/contact/:id", async (req, res) => {
 app.get("/payments/:token/:status", async (req, res) => {
     try {
         const id = req.params.id;
-        const rows = await dao.query("SELECT * FROM products WHERE cat_id=?", [id])
+        const rows = await dao.query("SELECT * FROM view_products WHERE cat_id=?", [id])
         res.send(rows);
     } catch (ex) {
         res.send({ status: 404, message: "Error getting contacts", ex: ex });

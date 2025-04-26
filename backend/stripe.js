@@ -9,7 +9,7 @@ const Stripe = require('stripe');
 const props = {
     id: 1,
     key: "sk_test_51R6dtu2KIZjH6PVUPWNYAqKqDiUTyGWUMbuLiFWy3rjP9CDpo3X8x8cqOycP9xbFRkIUfXIPUIZDCWAjNQkhYLpe003MEsbTnK",
-    responseUrl: "http://localhost:4000/api/payment",
+    responseUrl: "http://44.198.80.99:4000/api/payment",
     description: "Purchase",
     amount: 99,
     quantity: 1,
